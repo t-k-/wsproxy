@@ -19,11 +19,12 @@ var short_server = http.createServer().listen(8999);
 
 short_server.on('upgrade', function(req, socket, head) {
 	common.setupSocket(socket);
-//	common.printIO('> ',
-//		req['method'] + ' ' + req['url'] + '\n' +
-//		common.headerLines(req),
-//		socket.remoteAddress, socket.remotePort
-//	);
+
+	common.printIO('> ',
+		req['method'] + ' ' + req['url'] + '\n' +
+		common.headerLines(req),
+		socket.remoteAddress, socket.remotePort
+	);
 
     if (head && head.length) socket.unshift(head);
 	
@@ -33,6 +34,10 @@ short_server.on('upgrade', function(req, socket, head) {
 
 
 	if (long_socket) {
+		common.printIO('>>', tmpMsg,
+			long_socket.remoteAddress, long_socket.remotePort
+		);
+
 		long_socket.write(tmpMsg);
 		socket.pipe(long_socket)
 		long_socket.pipe(socket);
