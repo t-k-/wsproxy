@@ -1,4 +1,4 @@
-remote_host = '45.79.73.243';
+remote_host = '211.159.189.25';
 //remote_host = '127.0.0.1';
 
 var net = require('net');
@@ -21,15 +21,20 @@ short_socket.connect(8989, '127.0.0.1', function() {
 	long_socket.write(chunk);
 });
 
+function conn_long() {
 long_socket.connect(8986, remote_host, function() {
 	common.setupSocket(long_socket);
 	console.log('long socket connected');
 
 }).on('close', function() {
 	console.log('long socket closed !!!!!');
+	setTimeout(conn_long, 2000);
 }).on('error', function (err) {
 	console.log('long socket ERR: ' + err.message);
 }).on('data', function(chunk) {
 	console.log('long socket on data...');
 	short_socket.write(chunk);
 });
+}
+
+conn_long();

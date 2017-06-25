@@ -11,13 +11,17 @@ long_server.on('connection', function(socket) {
 	long_socket = socket;
 
 	socket.on('error', function(err){
-		console.log('ERR: ' + err.message);
+		console.log('long ERR: ' + err.message);
 	});
 });
 
 var short_server = http.createServer().listen(8999);
 
 short_server.on('upgrade', function(req, socket, head) {
+	socket.on('error', function(err){
+		console.log('short ERR: ' + err.message);
+	});
+
 	common.setupSocket(socket);
 
 	common.printIO('> ',
@@ -39,6 +43,8 @@ short_server.on('upgrade', function(req, socket, head) {
 		);
 
 		long_socket.write(tmpMsg);
+		long_socket.end();
+
 		socket.pipe(long_socket)
 		long_socket.pipe(socket);
 	}
