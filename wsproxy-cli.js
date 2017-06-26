@@ -23,7 +23,7 @@ short_socket.connect(8989, '127.0.0.1', function() {
 	console.log('short socket ERR: ' + err.message);
 }).on('data', function(chunk) {
 	console.log('short socket on data...');
-	long_socket.write(chunk);
+	//long_socket.write(chunk);
 });
 
 long_socket.connect(8986, remote_host, function() {
@@ -41,5 +41,6 @@ long_socket.connect(8986, remote_host, function() {
 	console.log('long socket ERR: ' + err.message);
 }).on('data', function(chunk) {
 	console.log('long socket on data...');
-	short_socket.write(chunk);
+	console.log(chunk.toString());
+	//short_socket.write(chunk);
 });
