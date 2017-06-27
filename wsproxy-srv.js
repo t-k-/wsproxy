@@ -17,11 +17,26 @@ function pipe_alloc(assoc_id) {
 	return null;
 }
 
+function pipe_list() {
+	for (var i = 0; i < pipe_sockets.length; i++) {
+		var assoc_id = pipe_sockets[i].assoc_id;
+		if (assoc_id == 0)
+			console.log('pipe[' + i + '] (free)');
+		else
+			console.log('pipe[' + i + '] => ' +
+			            'public socket' + assoc_id);
+	}
+}
+
 function pipe_free(assoc_id) {
 	for (var i = 0; i < pipe_sockets.length; i++) {
 		if (pipe_sockets[i].assoc_id == assoc_id) {
-			console.log('pipe socket' + assoc_id + ' ended.');
+			console.log('pipe[' + i + '] public socket' +
+			            assoc_id + ' ended.');
+			/* send FIN to the other end. */
 			pipe_sockets[i].end();
+			/* remove it from array. */
+			pipe_sockets.splice(i, 1);
 			return;
 		}
 	}
@@ -39,17 +54,22 @@ pipe_listener.on('connection', function(socket) {
 
 	socket.assoc_id = 0;
 	pipe_sockets.push(socket);
+
+	/* print all current pipes */
+	pipe_list();
 });
 
 var pub_listener = http.createServer().listen(8999);
 pub_listener.on('upgrade', function(req, socket, head) {
-//	peer_info = {
-//		'IP': socket.remoteAddress,
-//		'port': socket.remotePort,
-//		'UsrAgent': req.headers['user-agent'],
-//	};
-//	console.log(peer_info);
+	/* print client info */
+	client_info = {
+		'IP': socket.remoteAddress,
+		'port': socket.remotePort,
+		'UsrAgent': req.headers['user-agent'],
+	};
+	console.log(client_info);
 
+	/* setup socket */
 	common.setupSocket(socket);
 
 	/* allocate ID */
@@ -62,8 +82,11 @@ pub_listener.on('upgrade', function(req, socket, head) {
 		console.log('no free pipe');
 		return;
 	} else {
-		console.log('pipe allocated.');
+		console.log('a free pipe allocated.');
 	}
+
+	/* print all current pipes */
+	pipe_list();
 
 	/* forward this upgrade message first */
 	if (head && head.length) socket.unshift(head);
@@ -81,5 +104,8 @@ pub_listener.on('upgrade', function(req, socket, head) {
 		pipe_free(this.assoc_id);
 		this.destroy();
 		this.unref();
+
+		/* print all current pipes */
+		pipe_list();
 	});
 });
