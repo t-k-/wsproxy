@@ -60,6 +60,8 @@ pipe_listener.on('connection', function(socket) {
 });
 
 var pub_listener = http.createServer().listen(8999);
+console.log('listening...');
+
 pub_listener.on('upgrade', function(req, socket, head) {
 	/* print client info */
 	client_info = {
