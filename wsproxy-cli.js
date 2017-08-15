@@ -1,5 +1,5 @@
-remote_host = '211.159.189.25';
-//remote_host = '127.0.0.1';
+remote_host = process.argv[2]; // remote host IP
+console.log('Remote host: ' + remote_host);
 
 var net = require('net');
 var http = require('http');
