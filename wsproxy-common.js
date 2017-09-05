@@ -27,9 +27,9 @@ module.exports = {
 	},
 
 	timelog: function (string) {
-		let tz_offset = (new Date()).getTimezoneOffset() * 60000;
-		let local_time = (new Date(Date.now() - tz_offset)).toISOString().slice(0,-1);
-		let prefix = local_time.replace(/T/, ' ').replace(/\..+/, '');
+		var tz_offset = (new Date()).getTimezoneOffset() * 60000;
+		var local_time = (new Date(Date.now() - tz_offset)).toISOString().slice(0,-1);
+		var prefix = local_time.replace(/T/, ' ').replace(/\..+/, '');
 		console.log('[' + prefix + '] ' + string);
 	},
 	
