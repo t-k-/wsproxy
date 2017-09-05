@@ -51,6 +51,16 @@ pipe_listener.on('connection', function(socket) {
 
 	socket.on('error', function(err){
 		timelog('pipe ERR: ' + err.message);
+
+		/* the same with on_end */
+		pipe_free(this.assoc_id);
+		this.unpipe(); /* to notify its associated
+		                  pub socket to close itself. */
+		this.destroy();
+		this.unref();
+
+		/* print all current pipes */
+		pipe_list();
 	});
 	socket.on('end', function() {
 		pipe_free(this.assoc_id);
@@ -124,6 +134,14 @@ pub_listener.on('upgrade', function(req, socket, head) {
 
 	socket.on('error', function(err){
 		timelog('pub socket ERR: ' + err.message);
+
+		/* the same with on_end */
+		pipe_free(this.assoc_id);
+		this.destroy();
+		this.unref();
+
+		/* print all current pipes */
+		pipe_list();
 	});
 
 	socket.on('unpipe', function() {
