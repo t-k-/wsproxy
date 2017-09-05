@@ -18,12 +18,19 @@ module.exports = {
 	},
 
 	printIO: function (prefix, req_str, ip, port) {
-		console.log("From/to: " + ip + ':' + port);
+		timelog("From/to: " + ip + ':' + port);
 		var req_arr = req_str.trim().split("\n");
 		for(var key in req_arr) {
-			console.log(prefix + ' ' + req_arr[key]);
+			timelog(prefix + ' ' + req_arr[key]);
 		}
-		console.log("\n");
+		timelog("\n");
+	},
+
+	timelog: function (string) {
+		let tz_offset = (new Date()).getTimezoneOffset() * 60000;
+		let local_time = (new Date(Date.now() - tz_offset)).toISOString().slice(0,-1);
+		let prefix = local_time.replace(/T/, ' ').replace(/\..+/, '');
+		console.log('[' + prefix + '] ' + string);
 	},
 	
 	extend: util._extend

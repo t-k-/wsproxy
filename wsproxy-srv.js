@@ -1,6 +1,7 @@
 var net = require('net');
 var http = require('http');
 var common = require('./wsproxy-common.js');
+var timelog = common.timelog;
 
 var g_socket_id = 0;
 var pipe_listener = net.createServer().listen(8986);
@@ -21,9 +22,9 @@ function pipe_list() {
 	for (var i = 0; i < pipe_sockets.length; i++) {
 		var assoc_id = pipe_sockets[i].assoc_id;
 		if (assoc_id == 0)
-			console.log('pipe[' + i + '] (free)');
+			timelog('pipe[' + i + '] (free)');
 		else
-			console.log('pipe[' + i + '] => ' +
+			timelog('pipe[' + i + '] => ' +
 			            'public socket' + assoc_id);
 	}
 }
@@ -31,7 +32,7 @@ function pipe_list() {
 function pipe_free(assoc_id) {
 	for (var i = 0; i < pipe_sockets.length; i++) {
 		if (pipe_sockets[i].assoc_id == assoc_id) {
-			console.log('pipe[' + i + '] public socket' +
+			timelog('pipe[' + i + '] public socket' +
 			            assoc_id + ' ended.');
 			/* send FIN to the other end. */
 			pipe_sockets[i].end();
@@ -41,15 +42,15 @@ function pipe_free(assoc_id) {
 		}
 	}
 
-	console.log('nothing ended.');
+	timelog('nothing ended.');
 }
 
 pipe_listener.on('connection', function(socket) {
-	console.log('new pipe accepted.');
+	timelog('new pipe accepted.');
 	common.setupSocket(socket);
 
 	socket.on('error', function(err){
-		console.log('pipe ERR: ' + err.message);
+		timelog('pipe ERR: ' + err.message);
 	});
 	socket.on('end', function() {
 		pipe_free(this.assoc_id);
@@ -70,7 +71,7 @@ pipe_listener.on('connection', function(socket) {
 });
 
 var pub_listener = http.createServer().listen(8999);
-console.log('listening...');
+timelog('listening...');
 
 pub_listener.on('upgrade', function(req, socket, head) {
 	/* print client info */
@@ -79,22 +80,22 @@ pub_listener.on('upgrade', function(req, socket, head) {
 		'port': socket.remotePort,
 		'UsrAgent': req.headers['user-agent'],
 	};
-	console.log(client_info);
+	timelog(client_info);
 
 	/* setup socket */
 	common.setupSocket(socket);
 
 	/* allocate ID */
 	socket.assoc_id = (++g_socket_id);
-	console.log('new public socket' + socket.assoc_id);
+	timelog('new public socket' + socket.assoc_id);
 
 	/* allocate a free pipe socket */
 	var free_socket = pipe_alloc(socket.assoc_id);
 	if (free_socket == null) {
-		console.log('no free pipe');
+		timelog('no free pipe');
 		return;
 	} else {
-		console.log('a free pipe allocated.');
+		timelog('a free pipe allocated.');
 	}
 
 	/* print all current pipes */
@@ -122,11 +123,11 @@ pub_listener.on('upgrade', function(req, socket, head) {
 	});
 
 	socket.on('error', function(err){
-		console.log('pub socket ERR: ' + err.message);
+		timelog('pub socket ERR: ' + err.message);
 	});
 
 	socket.on('unpipe', function() {
-		console.log('pub socket unpiped.');
+		timelog('pub socket unpiped.');
 		this.destroy();
 		this.unref();
 	});
